@@ -2,6 +2,9 @@ require("dotenv").config()
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db")
+const authRoute = require("./routes/authRoute")
+const adminRoute = require("./routes/adminRoute")
+const doctorRoute = require("./routes/doctorRoute")
 
 const app = express();
 
@@ -17,6 +20,17 @@ app.use(
 app.use(express.json());
 
 connectDB();
+
+//login for both doctor and admin
+app.use("/api/v1/auth", authRoute)
+
+// Admin (only role=admin) 
+app.use("/api/v1/admin",adminRoute)
+
+
+// Doctor (only role=doctor)
+app.use("/api/v1/doctor",doctorRoute)
+
 
 const PORT = process.env.PORT || 5000;
 
