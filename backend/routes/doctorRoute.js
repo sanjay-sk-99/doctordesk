@@ -4,7 +4,7 @@ const { addPatient,getMyPatients } = require("../controller/doctorController")
 
 const router = express.Router()
 
-// Admin (only role=admin)
+// Doctor (only role=doctor)
 router.post("/addpatient", authMiddleware(["doctor"]), addPatient);
 router.get("/getpatient", authMiddleware(["doctor"]), getMyPatients);
 
