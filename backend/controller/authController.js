@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const User = require("../models/userModel")
+const User = require("../models/userModel");
 
 exports.login = async (req, res) => {
   try {
@@ -9,8 +9,15 @@ exports.login = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (user.role === "doctor" && !user.isActive) {
+      return res
+        .status(403)
+        .json({ message: "Doctor account is deactivated. Contact admin." });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },

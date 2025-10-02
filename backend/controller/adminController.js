@@ -35,3 +35,40 @@ exports.getDoctors = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
+exports.updateDoctor = async (req, res) => {
+  try {
+    const { id } = req.params; // doctor _id
+    const updates = req.body;
+
+    const doctor = await User.findOneAndUpdate(
+      { _id: id, role: "doctor" },
+      updates,
+      { new: true }
+    ).select("-password");
+
+    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+    res.json({ message: "Doctor updated successfully", doctor });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Delete doctor
+exports.deleteDoctor = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const doctor = await User.findOneAndDelete({ _id: id, role: "doctor" });
+    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+
+    res.json({ message: "Doctor deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
