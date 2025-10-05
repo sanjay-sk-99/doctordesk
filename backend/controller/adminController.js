@@ -36,12 +36,16 @@ exports.getDoctors = async (req, res) => {
   }
 };
 
-
-
 exports.updateDoctor = async (req, res) => {
   try {
     const { id } = req.params; // doctor _id
     const updates = req.body;
+
+    if (!updates.password || !updates.password.trim()) {
+      delete updates.password;
+    } else {
+      updates.password = await bcrypt.hash(updates.password, 10);
+    }
 
     const doctor = await User.findOneAndUpdate(
       { _id: id, role: "doctor" },
@@ -65,10 +69,8 @@ exports.deleteDoctor = async (req, res) => {
     const doctor = await User.findOneAndDelete({ _id: id, role: "doctor" });
     if (!doctor) return res.status(404).json({ message: "Doctor not found" });
 
-
     res.json({ message: "Doctor deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-

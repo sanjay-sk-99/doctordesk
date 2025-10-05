@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
+import API_PATHS from "../utils/apiPath";
+import { useUserContext } from "../context/UserContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,6 +12,7 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
+  const { setHasFetched } = useUserContext();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,10 +35,7 @@ const Login = () => {
     if (!validateForm()) return;
 
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/v1/auth/login",
-        formData
-      );
+      const res = await axiosInstance.post(API_PATHS.LOGIN, formData);
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
@@ -46,10 +46,11 @@ const Login = () => {
       setFormData({ username: "", password: "" });
 
       setTimeout(() => {
+        setHasFetched(false);
         if (res.data.role === "admin") {
-          navigate("/admin-dashboard");
+          navigate("/admin");
         } else {
-          navigate("/doctor-dashboard");
+          navigate("/doctor");
         }
       }, 1500);
     } catch (err) {
@@ -77,10 +78,7 @@ const Login = () => {
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username */}
           <div>
             <label className="block text-gray-700 mb-1">User Name:</label>
@@ -90,7 +88,7 @@ const Login = () => {
               placeholder="Enter your username"
               value={formData.username}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-black ${
                 errors.username
                   ? "border-red-500 focus:ring-red-300"
                   : "focus:ring-blue-300"
@@ -110,7 +108,7 @@ const Login = () => {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-black  ${
                 errors.password
                   ? "border-red-500 focus:ring-red-300"
                   : "focus:ring-blue-300"
