@@ -6,7 +6,7 @@ const FormContext = createContext();
 
 export const FormProvider = ({ children }) => {
   const [showForm, setShowForm] = useState(false);
-  const [type, setType] = useState("dashboard");
+  const [type, setType] = useState("");
 
   return (
     <FormContext.Provider value={{ showForm, setShowForm, type, setType }}>
