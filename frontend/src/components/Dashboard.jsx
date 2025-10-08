@@ -8,13 +8,14 @@ import { Trash2, Edit } from "lucide-react";
 import { useFormContext } from "../context/FormContext";
 import { useUserContext } from "../context/UserContext";
 import DataTable from "./DataTable";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard({ role }) {
   const [editingItem, setEditingItem] = useState(null);
   const [filter, setFilter] = useState("");
   const [filteredDoctors, setFilteredDoctors] = useState([]);
-  const location = useLocation()
-  const { showForm, setShowForm, type,setType } = useFormContext();
+  const location = useLocation();
+  const { showForm, setShowForm, type, setType } = useFormContext();
   const {
     doctorData,
     setDoctorData,
@@ -48,14 +49,16 @@ export default function Dashboard({ role }) {
     }
   }, []);
 
-    // Set type based on current URL on component mount
+  // Set type based on current URL on component mount
   useEffect(() => {
-    if (location.pathname.includes('/doctors')) {
-      setType('doctor');
-    } else if (location.pathname.includes('/patients')) {
-      setType('patient');
+    if (location.pathname.includes("/doctors")) {
+      setType("doctor");
+      setShowForm(false);
+    } else if (location.pathname.includes("/patients")) {
+      setType("patient");
+      setShowForm(false);
     } else {
-      setType('dashboard');
+      setType("dashboard");
     }
   }, [location.pathname]);
 
@@ -155,21 +158,32 @@ export default function Dashboard({ role }) {
 
   return (
     <div>
-      {showForm &&
-        (type === "doctor" ? (
-          <DoctorForm
-            editingDoctor={editingItem}
-            onClose={handleFormClose}
-            onSubmit={handleSubmit}
-          />
-        ) : (
-          <PatientForm
-            role={role}
-            editingPatient={editingItem}
-            onClose={handleFormClose}
-            onSubmit={handleSubmit}
-          />
-        ))}
+      <AnimatePresence mode="wait">
+        {showForm && (
+          <motion.div
+            key={type} // helps reset animation when switching doctor/patient
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {type === "doctor" ? (
+              <DoctorForm
+                editingDoctor={editingItem}
+                onClose={handleFormClose}
+                onSubmit={handleSubmit}
+              />
+            ) : (
+              <PatientForm
+                role={role}
+                editingPatient={editingItem}
+                onClose={handleFormClose}
+                onSubmit={handleSubmit}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Doctor Table */}
       {type === "doctor" ? (
