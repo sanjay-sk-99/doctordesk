@@ -1,18 +1,9 @@
 import React from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import {
-  Users,
-  User,
-  LogOut,
-  LayoutDashboard,
-  Stethoscope,
-  Menu,
-} from "lucide-react";
-import { useFormContext } from "../context/FormContext";
-import Sidebar from "../components/Sidebar";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
+import Sidebar from "../components/dashboard/Sidebar";
 
 export default function Layout({ role }) {
-  const { setType } = useFormContext();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
@@ -36,7 +27,6 @@ export default function Layout({ role }) {
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         role={role}
-        setType={setType}
         handleLogout={handleLogout}
       />
 
