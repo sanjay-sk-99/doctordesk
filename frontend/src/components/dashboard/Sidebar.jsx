@@ -1,15 +1,32 @@
-import { NavLink } from 'react-router-dom';
-import { Stethoscope, LayoutDashboard, User, Users, LogOut } from 'lucide-react';
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  Stethoscope,
+  LayoutDashboard,
+  User,
+  Users,
+  LogOut,
+} from "lucide-react";
+import { useFormContext } from "../../context/FormContext";
 
-const Sidebar = ({ isSidebarOpen, role, setType, handleLogout }) => {
+const Sidebar = ({ isSidebarOpen, role, handleLogout }) => {
+  const { setType } = useFormContext();
+  const location = useLocation();
+  const isDashboardActive =
+    location.pathname === "/admin" ||
+    location.pathname === "/admin/dashboard" ||
+    location.pathname === "/doctor" ||
+    location.pathname === "/doctor/dashboard";
+
   return (
-    <div className={`
+    <div
+      className={`
       fixed lg:static inset-y-0 left-0 z-30
       w-64 bg-white text-gray-700 
       transform transition-transform duration-300 ease-in-out
       flex flex-col shadow-lg border-r border-gray-200
-      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-    `}>
+      ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+    `}
+    >
       {/* Sidebar Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -28,14 +45,12 @@ const Sidebar = ({ isSidebarOpen, role, setType, handleLogout }) => {
         {role === "admin" && (
           <>
             <NavLink
-              to="/admin/maindashboard"
-              className={({ isActive }) =>
-                `flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                  isActive 
-                    ? "bg-blue-50 text-blue-600 border-l-3 border-blue-500 shadow-sm" 
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`
-              }
+              to="/admin/dashboard"
+              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
+                isDashboardActive
+                  ? "bg-blue-50 text-blue-600 border-l-3 border-blue-500 shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              }`}
               onClick={() => setType("dashboard")}
             >
               <LayoutDashboard className="w-4 h-4 mr-3" />
@@ -45,8 +60,8 @@ const Sidebar = ({ isSidebarOpen, role, setType, handleLogout }) => {
               to="/admin/doctors"
               className={({ isActive }) =>
                 `flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                  isActive 
-                    ? "bg-green-50 text-green-600 border-l-3 border-green-500 shadow-sm" 
+                  isActive
+                    ? "bg-green-50 text-green-600 border-l-3 border-green-500 shadow-sm"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 }`
               }
@@ -59,8 +74,8 @@ const Sidebar = ({ isSidebarOpen, role, setType, handleLogout }) => {
               to="/admin/patients"
               className={({ isActive }) =>
                 `flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                  isActive 
-                    ? "bg-purple-50 text-purple-600 border-l-3 border-purple-500 shadow-sm" 
+                  isActive
+                    ? "bg-purple-50 text-purple-600 border-l-3 border-purple-500 shadow-sm"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 }`
               }
@@ -74,14 +89,12 @@ const Sidebar = ({ isSidebarOpen, role, setType, handleLogout }) => {
         {role === "doctor" && (
           <>
             <NavLink
-              to="/doctor/maindashboard"
-              className={({ isActive }) =>
-                `flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                  isActive 
-                    ? "bg-blue-50 text-blue-600 border-l-3 border-blue-500 shadow-sm" 
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`
-              }
+              to="/doctor/dashboard"
+              className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
+                isDashboardActive
+                  ? "bg-blue-50 text-blue-600 border-l-3 border-blue-500 shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              }`}
               onClick={() => setType("dashboard")}
             >
               <LayoutDashboard className="w-4 h-4 mr-3" />
@@ -91,8 +104,8 @@ const Sidebar = ({ isSidebarOpen, role, setType, handleLogout }) => {
               to="/doctor/patients"
               className={({ isActive }) =>
                 `flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                  isActive 
-                    ? "bg-purple-50 text-purple-600 border-l-3 border-purple-500 shadow-sm" 
+                  isActive
+                    ? "bg-purple-50 text-purple-600 border-l-3 border-purple-500 shadow-sm"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 }`
               }

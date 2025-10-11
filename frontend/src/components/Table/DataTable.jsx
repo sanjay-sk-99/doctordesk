@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -15,10 +15,21 @@ import {
   ChevronsRight,
   Search,
   X,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Calendar,
+  Pill,
+  FileText,
+  Users,
 } from "lucide-react";
+import DoctorPatientsTable from "./DoctorPatientsTable";
+import TablePagination from "./TablePagination";
 
 const DataTable = ({
   type = "doctor",
+  fetchDoctorPatients,
   data = [],
   filter,
   setFilter,
@@ -34,6 +45,48 @@ const DataTable = ({
     pageSize: 10,
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedRows, setExpandedRows] = useState({ doctor: new Set(), patient: new Set() });
+  const [doctorPatients, setDoctorPatients] = useState({});
+  const [loadingPatients, setLoadingPatients] = useState({});
+ 
+  // Toggle row expansion
+  const toggleRowExpansion = async (rowId, doctorIdOrPatientObj) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev[type]);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+        // Only fetch patients if doctor table
+        if (isDoctor && doctorIdOrPatientObj && !doctorPatients[doctorIdOrPatientObj]) {
+          fetchDoctorPatientsData(doctorIdOrPatientObj);
+        }
+      }
+      return { ...prev, [type]: newSet };
+    });
+  };
+
+  const fetchDoctorPatientsData = async (doctorId) => {
+    setLoadingPatients((prev) => ({ ...prev, [doctorId]: true }));
+    try {
+      let patients;
+      if (fetchDoctorPatients) {
+        // Use the passed function if available
+        patients = await fetchDoctorPatients(doctorId);
+      } else {
+        // Fallback to filtering existing data
+        patients = data.filter(
+          (patient) => getCellValue(patient, "doctorId") === doctorId
+        );
+      }
+      setDoctorPatients((prev) => ({ ...prev, [doctorId]: patients }));
+    } catch (err) {
+      console.error("Error fetching patients:", err);
+      setDoctorPatients((prev) => ({ ...prev, [doctorId]: [] }));
+    } finally {
+      setLoadingPatients((prev) => ({ ...prev, [doctorId]: false }));
+    }
+  };
 
   // Get cell value helper
   const getCellValue = (item, key) => {
@@ -79,6 +132,74 @@ const DataTable = ({
       default:
         return "";
     }
+  };
+
+  // Medical Records Card Component
+  const MedicalRecordsCard = ({ records }) => {
+    if (!records || records.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          <FileText className="mx-auto mb-2 h-12 w-12 text-gray-300" />
+          <p className="text-sm">No medical records available</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {records.map((record, index) => (
+          <div
+            key={index}
+            className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-gray-800 flex items-center">
+                <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                Record #{index + 1}
+              </h4>
+              {record.date && (
+                <span className="text-xs text-gray-500 flex items-center">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  {new Date(record.date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Diagnosis
+                </label>
+                <p className="text-sm text-gray-800 mt-1">
+                  {record.diagnosis || "Not specified"}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Treatment
+                </label>
+                <p className="text-sm text-gray-800 mt-1">
+                  {record.treatment || "Not specified"}
+                </p>
+              </div>
+
+              {record.prescription && (
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center">
+                    <Pill className="h-3 w-3 mr-1" />
+                    Prescription
+                  </label>
+                  <p className="text-sm text-gray-800 mt-1 bg-blue-50 p-2 rounded">
+                    {record.prescription}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // Define columns based on type
@@ -135,11 +256,27 @@ const DataTable = ({
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <div className="flex space-x-2 justify-center">
+          <div className="">
+            <button
+              onClick={() =>
+                toggleRowExpansion(
+                  row.id,
+                  getCellValue(row.original, "doctorId")
+                )
+              }
+              className="p-1 pr-2 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+              title="View Patients"
+            >
+              {expandedRows[type].has(row.id) ? (
+                <ChevronUp size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
             {onEdit && (
               <button
                 onClick={() => onEdit(row.original)}
-                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                className="p-1 pr-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                 title="Edit"
               >
                 <Edit size={18} />
@@ -233,11 +370,22 @@ const DataTable = ({
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <div className="flex space-x-2 justify-center">
+          <div className="">
+            <button
+              onClick={() => toggleRowExpansion(row.id,row.original)}
+              className="p-1 pr-2 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+              title="View Medical Records"
+            >
+              {expandedRows[type].has(row.id) ? (
+                <ChevronUp size={18} />
+              ) : (
+                <Eye size={18} />
+              )}
+            </button>
             {onEdit && (
               <button
                 onClick={() => onEdit(row.original)}
-                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                className="p-1 pr-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                 title="Edit"
               >
                 <Edit size={18} />
@@ -258,7 +406,7 @@ const DataTable = ({
     ];
 
     return isDoctor ? doctorColumns : patientColumns;
-  }, [isDoctor, onEdit, onDelete]);
+  }, [isDoctor, onEdit, onDelete, expandedRows]);
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
@@ -351,15 +499,15 @@ const DataTable = ({
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="w-full max-w-7xl mx-auto overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                      className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
                     >
                       {header.isPlaceholder
                         ? null
@@ -375,22 +523,69 @@ const DataTable = ({
             <tbody className="divide-y divide-gray-200">
               {table.getRowModel().rows.length > 0 ? (
                 table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
+                  <React.Fragment key={row.id}>
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    {/* Expanded Row Content */}
+                    {expandedRows[type].has(row.id) && (
+                      <tr>
+                        <td
+                          colSpan={columns.length}
+                          className="px-6 py-6 bg-gradient-to-r from-blue-50 to-purple-50"
+                        >
+                          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-inner">
+                            <div className="mb-4 pb-3 border-b border-gray-200">
+                              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                                {isDoctor ? (
+                                  <>
+                                    <Users className="h-5 w-5 mr-2 text-purple-500" />
+                                    Patients of Dr.{" "}
+                                    {getCellValue(row.original, "name")}
+                                  </>
+                                ) : (
+                                  <>
+                                    <FileText className="h-5 w-5 mr-2 text-green-500" />
+                                    Medical Records for{" "}
+                                    {getCellValue(row.original, "name")}
+                                  </>
+                                )}
+                              </h3>
+                            </div>
+                            {isDoctor ? (
+                              <DoctorPatientsTable
+                                doctorId={getCellValue(
+                                  row.original,
+                                  "doctorId"
+                                )}
+                                getCellValue={getCellValue}
+                                loadingPatients={loadingPatients}
+                                doctorPatients={doctorPatients}
+                              />
+                            ) : (
+                              <MedicalRecordsCard
+                                records={
+                                  row.original.patientProfile?.medicalHistory ||
+                                  row.original.medicalHistory ||
+                                  []
+                                }
+                              />
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))
               ) : (
                 <tr>
@@ -422,77 +617,7 @@ const DataTable = ({
         </div>
 
         {/* Pagination */}
-        {filteredData.length > 0 && (
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Rows per page */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-700">Rows per page:</label>
-                <select
-                  value={table.getState().pagination.pageSize}
-                  onChange={(e) => {
-                    table.setPageSize(Number(e.target.value));
-                  }}
-                  className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {[5, 10, 20, 30, 50].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
-                      {pageSize}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Page info */}
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span>
-                  Page {table.getState().pagination.pageIndex + 1} of{" "}
-                  {table.getPageCount()}
-                </span>
-                <span className="text-gray-400">|</span>
-                <span>
-                  {table.getFilteredRowModel().rows.length} total records
-                </span>
-              </div>
-
-              {/* Navigation buttons */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  title="First page"
-                >
-                  <ChevronsLeft size={18} />
-                </button>
-                <button
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  title="Previous page"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  title="Next page"
-                >
-                  <ChevronRight size={18} />
-                </button>
-                <button
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  title="Last page"
-                >
-                  <ChevronsRight size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {filteredData.length > 0 && <TablePagination table={table} />}
       </div>
     </div>
   );

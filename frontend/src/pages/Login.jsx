@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import API_PATHS from "../utils/apiPath";
 import { useUserContext } from "../context/UserContext";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -42,8 +43,8 @@ const Login = () => {
       localStorage.setItem("role", res.data.role);
 
       setMessage({ type: "success", text: "Login successful!" });
+       toast.success("Login successfully!");
 
-      // ✅ Reset the form BEFORE navigation
       setFormData({ username: "", password: "" });
 
       setTimeout(() => {
@@ -59,6 +60,7 @@ const Login = () => {
         type: "error",
         text: err.response?.data?.error || "Login failed",
       });
+      toast.error(err.response?.data?.error || "Login failed")
     }
   };
 
@@ -94,8 +96,8 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-<div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-  <div className="w-full max-w-md bg-white/5 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/5">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-md bg-white/5 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/5">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white">Login</h2>
             <p className="text-gray-300 mt-2">
@@ -116,7 +118,7 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
+           
             <div>
               <label className="block text-gray-200 text-sm font-medium mb-2">
                 Username
@@ -168,7 +170,7 @@ const Login = () => {
               )}
             </div>
 
-            {/* Password */}
+        
             <div>
               <label className="block text-gray-200 text-sm font-medium mb-2">
                 Password
@@ -246,7 +248,7 @@ const Login = () => {
               )}
             </div>
 
-            {/* Submit Button */}
+           
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-blue-500/30 shadow-lg"
@@ -255,7 +257,6 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Additional Info */}
           <div className="mt-8 text-center">
             <p className="text-gray-300 text-sm">
               Demo credentials? Contact support

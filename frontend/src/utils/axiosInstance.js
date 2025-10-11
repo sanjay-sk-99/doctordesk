@@ -2,7 +2,6 @@ import axios from "axios";
 
 const baseURL = "http://localhost:8000"
 
-// baseURL: your backend server (change if hosted)
 const axiosInstance = axios.create({
   baseURL: baseURL, 
   headers: {
@@ -10,7 +9,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// 🔒 Attach token automatically if available
+// Attach token automatically if available
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {

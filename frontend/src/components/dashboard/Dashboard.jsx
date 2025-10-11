@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance";
-import API_PATHS from "../utils/apiPath";
-import DoctorForm from "./DoctorForm";
-import PatientForm from "./PatientForm";
-import { Trash2, Edit } from "lucide-react";
-import { useFormContext } from "../context/FormContext";
-import { useUserContext } from "../context/UserContext";
-import DataTable from "./DataTable";
+import axiosInstance from "../../utils/axiosInstance";
+import API_PATHS from "../../utils/apiPath";
+import DoctorForm from "../form/DoctorForm";
+import PatientForm from "../form/PatientForm";
+import ShowConfirmToast from "../../utils/ShowConfirmToast";
+import { useFormContext } from "../../context/FormContext";
+import { useUserContext } from "../../context/UserContext";
+import DataTable from "../Table/DataTable";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 
 export default function Dashboard({ role }) {
   const [editingItem, setEditingItem] = useState(null);
@@ -16,21 +17,14 @@ export default function Dashboard({ role }) {
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const location = useLocation();
   const { showForm, setShowForm, type, setType } = useFormContext();
-  const {
-    doctorData,
-    setDoctorData,
-    patientData,
-    setPatientData,
-    hasFetched,
-    setHasFetched,
-  } = useUserContext();
+  const { doctorData, patientData } = useUserContext();
 
   // Filter whenever doctorData or filter changes
   useEffect(() => {
     if (!doctorData || doctorData.length === 0) return;
 
     if (filter === "") {
-      setFilteredDoctors(doctorData); // show all
+      setFilteredDoctors(doctorData); 
       console.log(doctorData);
     } else {
       const filtered = doctorData.filter(
@@ -41,13 +35,6 @@ export default function Dashboard({ role }) {
       setFilteredDoctors(filtered);
     }
   }, [filter, doctorData]);
-
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchData();
-      setHasFetched(true);
-    }
-  }, []);
 
   // Set type based on current URL on component mount
   useEffect(() => {
@@ -62,28 +49,17 @@ export default function Dashboard({ role }) {
     }
   }, [location.pathname]);
 
-  const fetchData = async () => {
+  const fetchDoctorPatients = async (doctorId) => {
     try {
-      // Determine the correct API URL based on role and type
-
-      if (role === "admin") {
-        const params = filter ? { category: filter } : {};
-        const [doctorsRes, patientRes] = await Promise.all([
-          axiosInstance.get(API_PATHS.GET_DOCTORS, { params }),
-          axiosInstance.get(API_PATHS.GET_PATIENTS, { params }),
-        ]);
-        setDoctorData(doctorsRes.data);
-        setPatientData(patientRes.data);
-      } else {
-        const response = await axiosInstance.get(API_PATHS.GET_MY_PATIENTS);
-        setPatientData(response.data);
-      }
+      const res = await axiosInstance.get(API_PATHS.GET_PATIENTS, {
+        params: { doctorId },
+      });
+      return res.data;
     } catch (err) {
       console.error(err.response?.data || err.message);
+      return [];
     }
   };
-
-  // In Dashboard.jsx
 
   const handleSubmit = async (formData, id) => {
     try {
@@ -92,22 +68,22 @@ export default function Dashboard({ role }) {
           if (id) {
             // Update existing doctor
             await axiosInstance.put(API_PATHS.UPDATE_DOCTOR(id), formData);
-            alert("Doctor updated successfully");
+            toast.success("Doctor updated successfully");
           } else {
             // Create new doctor
             await axiosInstance.post(API_PATHS.CREATE_DOCTOR, formData);
-            alert("Doctor created successfully");
+            toast.success("Doctor created successfully");
           }
         } else {
           // type === "patient"
           if (id) {
             // Update existing patient
             await axiosInstance.put(API_PATHS.UPDATE_PATIENT(id), formData);
-            alert("Patient updated successfully");
+            toast.success("Patient updated successfully");
           } else {
             // Create new patient
             await axiosInstance.post(API_PATHS.CREATE_PATIENT, formData);
-            alert("Patient created successfully");
+            toast.success("Patient created successfully");
           }
         }
       } else {
@@ -115,19 +91,19 @@ export default function Dashboard({ role }) {
         if (id) {
           // Update existing patient
           await axiosInstance.put(API_PATHS.UPDATE_MY_PATIENT(id), formData);
-          alert("Patient updated successfully");
+          toast.success("Patient updated successfully");
         } else {
           // Create new patient
           await axiosInstance.post(API_PATHS.CREATE_MY_PATIENT, formData);
-          alert("Patient created successfully");
+          toast.success("Patient created successfully");
         }
       }
 
-      setShowForm(false); // Close the form
-      fetchData(); // Refresh the table
+      setShowForm(false); 
+      fetchData(); 
     } catch (err) {
       console.error(err.response?.data || err.message);
-      alert("Something went wrong. Check console for details.");
+      toast.error("Something went wrong");
     }
   };
 
@@ -136,19 +112,24 @@ export default function Dashboard({ role }) {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
+const handleDelete = (id) => {
+  ShowConfirmToast("Are you sure you want to delete this?", async () => {
     try {
       await axiosInstance.delete(
         type === "doctor"
           ? API_PATHS.DELETE_DOCTOR(id)
           : API_PATHS.DELETE_PATIENT(id)
       );
+
+
       fetchData();
+      toast.success("Deleted successfully!");
     } catch (err) {
       console.error(err.response?.data || err.message);
+      toast.error("Failed to delete!");
     }
-  };
+  });
+};
 
   const handleFormClose = () => {
     setEditingItem(null);
@@ -189,6 +170,7 @@ export default function Dashboard({ role }) {
       {type === "doctor" ? (
         <DataTable
           type="doctor"
+          fetchDoctorPatients={fetchDoctorPatients}
           data={filteredDoctors}
           filter={filter}
           setFilter={setFilter}

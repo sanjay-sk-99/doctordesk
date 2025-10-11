@@ -208,9 +208,9 @@ export default function DoctorForm({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="">Select Category</option>
-                <option value="Junior">Junior Doctor</option>
-                <option value="Senior">Senior Doctor</option>
-                <option value="Specialist">Specialist</option>
+                <option value="Senior">Senior Doctor</option> 
+                <option value="Junior">Junior Doctor</option>                      
+                <option value="Intern">Intern</option>
               </select>
             </div>
           </div>
