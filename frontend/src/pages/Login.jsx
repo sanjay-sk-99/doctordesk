@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import API_PATHS from "../utils/apiPath";
 import { useUserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
+import login from "../assets/login.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,7 +15,12 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { setHasFetched } = useUserContext();
+  const { setHasFetched,setDoctorName } = useUserContext();
+
+  //for accesing the route in browser url and user logged in it will redirect
+  const role = localStorage.getItem("role");
+  if (role === "admin") return <Navigate to="/admin" />;
+  if (role === "doctor") return <Navigate to="/doctor" />;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,9 +47,9 @@ const Login = () => {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
-
+      setDoctorName(res.data.name)
       setMessage({ type: "success", text: "Login successful!" });
-       toast.success("Login successfully!");
+      toast.success("Login successfully!");
 
       setFormData({ username: "", password: "" });
 
@@ -60,7 +66,7 @@ const Login = () => {
         type: "error",
         text: err.response?.data?.error || "Login failed",
       });
-      toast.error(err.response?.data?.error || "Login failed")
+      toast.error(err.response?.data?.error || "Login failed");
     }
   };
 
@@ -69,29 +75,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-200 to-purple-500 flex">
       {/* Left Side - Welcome Section */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
         <div className="text-center text-white">
-          <div className="w-64 h-64 mx-auto mb-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-2xl">
-            <svg
-              className="w-32 h-32 text-white opacity-80"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-4xl font-bold mb-6">Welcome Back</h2>
-          <p className="text-blue-200 text-xl max-w-md">
-            Sign in to access your dashboard and manage your account securely
-          </p>
+          <img src={login} alt="App Logo" className="h-110 w-150" />
         </div>
       </div>
 
@@ -118,7 +106,6 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-           
             <div>
               <label className="block text-gray-200 text-sm font-medium mb-2">
                 Username
@@ -170,7 +157,6 @@ const Login = () => {
               )}
             </div>
 
-        
             <div>
               <label className="block text-gray-200 text-sm font-medium mb-2">
                 Password
@@ -248,7 +234,6 @@ const Login = () => {
               )}
             </div>
 
-           
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-blue-500/30 shadow-lg"

@@ -54,7 +54,7 @@ const Sidebar = ({ isSidebarOpen, role, handleLogout }) => {
               onClick={() => setType("dashboard")}
             >
               <LayoutDashboard className="w-4 h-4 mr-3" />
-              <span className="font-medium text-sm">Dashboard</span>
+              <span className="font-medium text-sm">Admin Dashboard</span>
             </NavLink>
             <NavLink
               to="/admin/doctors"
@@ -68,7 +68,7 @@ const Sidebar = ({ isSidebarOpen, role, handleLogout }) => {
               onClick={() => setType("doctor")}
             >
               <User className="w-4 h-4 mr-3" />
-              <span className="font-medium text-sm">Doctors</span>
+              <span className="font-medium text-sm">Doctors Dashboard</span>
             </NavLink>
             <NavLink
               to="/admin/patients"
@@ -82,7 +82,7 @@ const Sidebar = ({ isSidebarOpen, role, handleLogout }) => {
               onClick={() => setType("patient")}
             >
               <Users className="w-4 h-4 mr-3" />
-              <span className="font-medium text-sm">Patients</span>
+              <span className="font-medium text-sm">Patients Dashboard</span>
             </NavLink>
           </>
         )}
@@ -98,7 +98,7 @@ const Sidebar = ({ isSidebarOpen, role, handleLogout }) => {
               onClick={() => setType("dashboard")}
             >
               <LayoutDashboard className="w-4 h-4 mr-3" />
-              <span className="font-medium text-sm">Dashboard</span>
+              <span className="font-medium text-sm">Doctor Dashboard</span>
             </NavLink>
             <NavLink
               to="/doctor/patients"
@@ -111,7 +111,7 @@ const Sidebar = ({ isSidebarOpen, role, handleLogout }) => {
               }
             >
               <Users className="w-4 h-4 mr-3" />
-              <span className="font-medium text-sm">My Patients</span>
+              <span className="font-medium text-sm">My Patients Dashboard</span>
             </NavLink>
           </>
         )}

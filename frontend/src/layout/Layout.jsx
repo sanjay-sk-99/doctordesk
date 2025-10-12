@@ -2,10 +2,12 @@ import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
 import Sidebar from "../components/dashboard/Sidebar";
+import { useUserContext } from "../context/UserContext";
 
 export default function Layout({ role }) {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const {doctorName}=useUserContext()
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -46,7 +48,7 @@ export default function Layout({ role }) {
                 <h1 className="text-2xl font-bold text-gray-800">
                   {role === "admin"
                     ? "Welcome back, Admin! 👋"
-                    : "Welcome back, Doctor! 👨‍⚕️"}
+                    : `Welcome back, ${doctorName} 👨‍⚕️`}
                 </h1>
                 <p className="text-gray-600 text-sm mt-1">
                   {role === "admin"
