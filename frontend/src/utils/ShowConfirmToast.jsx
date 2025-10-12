@@ -8,8 +8,8 @@ const ShowConfirmToast = (message, onConfirm) => {
         <div className="flex gap-3 mt-2">
           <button
             onClick={() => {
-              onConfirm();
               closeToast(); 
+              onConfirm();
             }}
             className="px-3 py-1 bg-green-500 text-white rounded"
           >

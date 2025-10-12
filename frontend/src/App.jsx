@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./pages/Login";
 import AdminPage from "./pages/AdminPage";
 import DoctorPage from "./pages/DoctorPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import axiosInstance from "./utils/axiosInstance";
-import API_PATHS from "./utils/apiPath";
-import { useUserContext } from "./context/UserContext";
+import useFetchUserData from "./hooks/useFetchUserData";
 
 function RootRedirect() {
   const token = localStorage.getItem("token");
@@ -22,52 +19,10 @@ function RootRedirect() {
 }
 
 export default function App() {
-  const {
-    setDoctorData,
-    setPatientData,
-    hasFetched,
-    setHasFetched,
-  } = useUserContext();
-
-  const [loading, setLoading] = useState(true);
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
 
-  const fetchData = async () => {
-    try {
-      if (role === "admin") {
-        const [doctorsRes, patientsRes] = await Promise.allSettled([
-          axiosInstance.get(API_PATHS.GET_DOCTORS),
-          axiosInstance.get(API_PATHS.GET_PATIENTS),
-        ]);
-
-        const doctors =
-          doctorsRes.status === "fulfilled" ? doctorsRes.value.data : [];
-        const patients =
-          patientsRes.status === "fulfilled" ? patientsRes.value.data : [];
-
-        setDoctorData(doctors);
-        setPatientData(patients);
-      } else if (role === "doctor") {
-        const response = await axiosInstance.get(API_PATHS.GET_MY_PATIENTS);
-        setPatientData(response.data || []);
-      }
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      toast.error("Unexpected error occurred while fetching data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (token && role && !hasFetched) {
-      fetchData();
-      setHasFetched(true);
-    } else {
-      setLoading(false);
-    }
-  }, [role, token, hasFetched]);
+  const { loading } = useFetchUserData(role, token);
 
   if (loading) {
     return (

@@ -1,10 +1,21 @@
-
 import { useUserContext } from "../../context/UserContext";
 
-
 export default function MainDashboard({ role }) {
+  const { doctorData, patientData, doctorDetails } = useUserContext();
 
-  const { doctorData, patientData } = useUserContext();
+  //For doctor dashboard
+  const doctorPatients = patientData.filter(
+    (pat) => pat.doctorId != doctorDetails.docId
+  );
+
+  const activePatientForDoctor = doctorPatients.filter(
+    (pat) => pat.isActive === true
+  );
+
+  //For admin dashboard
+  const activePatientForAdmin = patientData.filter(
+    (pat) => pat.isActive === true
+  );
 
   return (
     <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -48,7 +59,9 @@ export default function MainDashboard({ role }) {
               Total Patients
             </h2>
             <p className="text-3xl font-bold text-green-600 mb-1">
-              {patientData.length}
+              {role === "admin"
+                ? patientData.length || 0
+                : doctorPatients.length || 0}
             </p>
             <p className="text-xs text-gray-500">Patients under care</p>
           </div>
@@ -77,7 +90,11 @@ export default function MainDashboard({ role }) {
             <h2 className="text-base font-semibold text-gray-600 mb-1">
               Active Patients
             </h2>
-            <p className="text-3xl font-bold text-purple-600 mb-1">0</p>
+            <p className="text-3xl font-bold text-purple-600 mb-1">
+              {role === "admin"
+                ? activePatientForAdmin.length || 0
+                : activePatientForDoctor.length || 0}
+            </p>
             <p className="text-xs text-gray-500">Currently in treatment</p>
           </div>
           <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors">

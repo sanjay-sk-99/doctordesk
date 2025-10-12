@@ -12,7 +12,7 @@ export default function DoctorPage() {
 
         <Route path="dashboard" element={<MainDashboard role="doctor" />} />
 
-        <Route path="patients" element={<Dashboard type="patient" />} />
+        <Route path="patients" element={<Dashboard type="patient" role="doctor"/>} />
       </Route>
     </Routes>
   );

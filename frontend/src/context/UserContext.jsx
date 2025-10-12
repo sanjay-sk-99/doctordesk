@@ -6,12 +6,12 @@ const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [doctorData,setDoctorData]=useState([])
-  const [doctorName,setDoctorName]=useState("")
+  const [doctorDetails,setDoctorDetails]=useState({})
   const [patientData,setPatientData]=useState([])
   const [hasFetched,setHasFetched]=useState(false)
 
   return (
-    <UserContext.Provider value={{ doctorData,setDoctorData,patientData,setPatientData,hasFetched,setHasFetched,doctorName,setDoctorName }}>
+    <UserContext.Provider value={{ doctorData,setDoctorData,patientData,setPatientData,hasFetched,setHasFetched, doctorDetails, setDoctorDetails }}>
       {children}
     </UserContext.Provider>
   );
