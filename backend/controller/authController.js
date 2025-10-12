@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ token, role: user.role,name:user.doctorProfile.name });
+    res.json({ token, role: user.role,name:user.doctorProfile.name,docId:user.doctorId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

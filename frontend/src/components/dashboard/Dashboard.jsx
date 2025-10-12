@@ -10,6 +10,7 @@ import { useUserContext } from "../../context/UserContext";
 import DataTable from "../Table/DataTable";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import useFetchUserData from "../../hooks/useFetchUserData";
 
 export default function Dashboard({ role }) {
   const [editingItem, setEditingItem] = useState(null);
@@ -18,14 +19,15 @@ export default function Dashboard({ role }) {
   const location = useLocation();
   const { showForm, setShowForm, type, setType } = useFormContext();
   const { doctorData, patientData } = useUserContext();
+  const token = localStorage.getItem("token");
+  const { refetch } = useFetchUserData(role, token);
 
   // Filter whenever doctorData or filter changes
   useEffect(() => {
     if (!doctorData || doctorData.length === 0) return;
 
     if (filter === "") {
-      setFilteredDoctors(doctorData); 
-      console.log(doctorData);
+      setFilteredDoctors(doctorData);
     } else {
       const filtered = doctorData.filter(
         (doc) =>
@@ -98,9 +100,8 @@ export default function Dashboard({ role }) {
           toast.success("Patient created successfully");
         }
       }
-
-      setShowForm(false); 
-      fetchData(); 
+      await refetch();
+      setShowForm(false);
     } catch (err) {
       console.error(err.response?.data || err.message);
       toast.error("Something went wrong");
@@ -112,29 +113,28 @@ export default function Dashboard({ role }) {
     setShowForm(true);
   };
 
-const handleDelete = (id) => {
-  ShowConfirmToast("Are you sure you want to delete this?", async () => {
-    try {
-      await axiosInstance.delete(
-        type === "doctor"
-          ? API_PATHS.DELETE_DOCTOR(id)
-          : API_PATHS.DELETE_PATIENT(id)
-      );
+  const handleDelete = (id) => {
+    ShowConfirmToast("Are you sure you want to delete this?", async () => {
+      try {
+        await axiosInstance.delete(
+          type === "doctor"
+            ? API_PATHS.DELETE_DOCTOR(id)
+            : API_PATHS.DELETE_PATIENT(id)
+        );
 
-
-      fetchData();
-      toast.success("Deleted successfully!");
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      toast.error("Failed to delete!");
-    }
-  });
-};
+        await refetch();
+        toast.success("Deleted successfully!");
+      } catch (err) {
+        console.error(err.response?.data || err.message);
+        toast.error("Failed to delete!");
+      }
+    });
+  };
 
   const handleFormClose = () => {
     setEditingItem(null);
     setShowForm(false);
-    fetchData();
+    // refetch();
   };
 
   return (

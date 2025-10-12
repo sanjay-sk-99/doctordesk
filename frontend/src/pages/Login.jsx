@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import API_PATHS from "../utils/apiPath";
@@ -15,12 +15,21 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { setHasFetched,setDoctorName } = useUserContext();
+  const [redirectRole, setRedirectRole] = useState(null);
+  const { setHasFetched, setDoctorDetails } = useUserContext();
 
   //for accesing the route in browser url and user logged in it will redirect
-  const role = localStorage.getItem("role");
-  if (role === "admin") return <Navigate to="/admin" />;
-  if (role === "doctor") return <Navigate to="/doctor" />;
+
+  if (redirectRole === "admin") return <Navigate to="/admin" />;
+  if (redirectRole === "doctor") return <Navigate to="/doctor" />;
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
+    if (role && token) {
+      setRedirectRole(role);
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,7 +56,7 @@ const Login = () => {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
-      setDoctorName(res.data.name)
+      setDoctorDetails({ name: res.data?.name, docId: res.data?.docId });
       setMessage({ type: "success", text: "Login successful!" });
       toast.success("Login successfully!");
 
