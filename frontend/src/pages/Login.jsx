@@ -5,6 +5,7 @@ import API_PATHS from "../utils/apiPath";
 import { useUserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
 import login from "../assets/login.png";
+import { Stethoscope } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -54,9 +55,23 @@ const Login = () => {
     try {
       const res = await axiosInstance.post(API_PATHS.LOGIN, formData);
 
+      // localStorage.setItem("token", res.data.token);
+      // localStorage.setItem("role", res.data.role);
+      // setDoctorDetails({ name: res.data?.name, docId: res.data?.docId });
+      // setMessage({ type: "success", text: "Login successful!" });
+      // toast.success("Login successfully!");
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
-      setDoctorDetails({ name: res.data?.name, docId: res.data?.docId });
+
+      // 🩺 Save full doctor details to both context + localStorage
+      const doctorInfo = {
+        name: res.data?.name || res.data?.doctorProfile?.name,
+        docId: res.data?.docId,
+      };
+
+      setDoctorDetails(doctorInfo);
+      localStorage.setItem("doctorDetails", JSON.stringify(doctorInfo));
+
       setMessage({ type: "success", text: "Login successful!" });
       toast.success("Login successfully!");
 
@@ -84,30 +99,52 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-200 to-purple-500 flex">
-      {/* Left Side - Welcome Section */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
-        <div className="text-center text-white">
-          <img src={login} alt="App Logo" className="h-110 w-150" />
-        </div>
+    <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-linear-to-br from-[#AEE0DC] to-[#E8F0EF]">
+      {/* Left Side - Image Section */}
+      <div className="w-full lg:w-1/2 flex justify-center items-center relative">
+        <img
+          src={login}
+          alt="Doctor Illustration"
+          // className="w-[85%] h-auto max-h-[520px] object-contain lg:translate-x-10 drop-shadow-xl ml-3 rounded-2xl"
+          className="w-full h-[250px] sm:h-[350px] md:h-[400px] lg:h-screen object-cover"
+        />
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md bg-white/5 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/5">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white">Login</h2>
-            <p className="text-gray-300 mt-2">
-              Enter your credentials to continue
-            </p>
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-0 lg:py-0">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8 sm:p-10">
+          {/* Centered Stethoscope Icon */}
+          {/* <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <Stethoscope className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <h1 className="text-2xl font-semibold text-center text-gray-800 mb-1">Doctor Desk</h1>
+              <p className="text-gray-600 mt-1 text-sm">
+                Enter your credentials to continue
+              </p>
+            </div> */}
+          <div className="flex justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-linear-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+              <Stethoscope className="w-6 h-6 text-white" />
+            </div>
           </div>
+
+          {/* TITLE */}
+          <h2 className="text-2xl font-semibold text-center text-gray-800 mb-1">
+            Doctor Desk
+          </h2>
+          <p className="text-gray-500 text-center mb-8">
+            Enter your credentials to continue
+          </p>
 
           {message && (
             <div
-              className={`p-4 rounded-lg mb-6 text-center border ${
+              className={`p-2 rounded-lg mb-6 text-center border ${
                 message.type === "success"
-                  ? "bg-green-900/30 border-green-500/50 text-green-300"
-                  : "bg-red-900/30 border-red-500/50 text-red-300"
+                  ? "bg-green-300 border-green-500/50 text-black"
+                  : "bg-red-300 border-red-500/50 text-black"
               }`}
             >
               {message.text}
@@ -116,7 +153,7 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-200 text-sm font-medium mb-2">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Username
               </label>
               <div className="relative">
@@ -167,7 +204,7 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="block text-gray-200 text-sm font-medium mb-2">
+              <label className="block text-gray-800 text-sm font-medium mb-2">
                 Password
               </label>
               <div className="relative">
@@ -245,19 +282,14 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-blue-500/30 shadow-lg"
+              className="w-full bg-linear-to-br from-[#33fae9] to-[#acd4cf] hover:from-[#38e4d5] hover:to-[#e097d8]  text-black font-bold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-blue-500/30 shadow-lg"
             >
               Login
             </button>
           </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-gray-300 text-sm">
-              Demo credentials? Contact support
-            </p>
-          </div>
         </div>
       </div>
+      {/* </div> */}
     </div>
   );
 };
