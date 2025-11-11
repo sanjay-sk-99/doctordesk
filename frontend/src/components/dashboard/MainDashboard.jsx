@@ -5,7 +5,7 @@ export default function MainDashboard({ role }) {
 
   //For doctor dashboard
   const doctorPatients = patientData.filter(
-    (pat) => pat.doctorId != doctorDetails.docId
+    (pat) => pat.doctorId === doctorDetails.docId
   );
 
   const activePatientForDoctor = doctorPatients.filter(

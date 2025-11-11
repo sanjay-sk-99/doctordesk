@@ -137,61 +137,88 @@ export default function Dashboard({ role }) {
     // refetch();
   };
 
+  // Close form when ESC key pressed
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && showForm) setShowForm(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showForm]);
+
   return (
-    <div>
+    <div className="relative">
+      <div className={`${showForm ? "blur-sm pointer-events-none" : ""}`}>
+        {/* Doctor Table */}
+        {type === "doctor" ? (
+          <DataTable
+            type="doctor"
+            fetchDoctorPatients={fetchDoctorPatients}
+            data={filteredDoctors}
+            filter={filter}
+            setFilter={setFilter}
+            onShowForm={setShowForm}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            showAddButton={true}
+            showFilter={true}
+          />
+        ) : (
+          /* Patient Table */
+          <DataTable
+            type="patient"
+            data={patientData}
+            onShowForm={setShowForm}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            showAddButton={true}
+            showFilter={false}
+          />
+        )}
+      </div>
       <AnimatePresence mode="wait">
         {showForm && (
-          <motion.div
-            key={type} // helps reset animation when switching doctor/patient
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
-            {type === "doctor" ? (
-              <DoctorForm
-                editingDoctor={editingItem}
-                onClose={handleFormClose}
-                onSubmit={handleSubmit}
-              />
-            ) : (
-              <PatientForm
-                role={role}
-                editingPatient={editingItem}
-                onClose={handleFormClose}
-                onSubmit={handleSubmit}
-              />
-            )}
-          </motion.div>
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.div
+              key={type} // helps reset animation when switching doctor/patient
+              className="fixed inset-0 z-40 flex items-center justify-center"
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <div className="relative w-full rounded-lg max-w-2xl mx-4 my-10 overflow-y-auto max-h-[90vh] scrollbar-hide">
+                <button
+                  onClick={handleFormClose}
+                  className="absolute top-3 right-4 text-white hover:text-gray-600 text-xl"
+                >
+                  ✕
+                </button>
+                {type === "doctor" ? (
+                  <DoctorForm
+                    editingDoctor={editingItem}
+                    onClose={handleFormClose}
+                    onSubmit={handleSubmit}
+                  />
+                ) : (
+                  <PatientForm
+                    role={role}
+                    editingPatient={editingItem}
+                    onClose={handleFormClose}
+                    onSubmit={handleSubmit}
+                  />
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-
-      {/* Doctor Table */}
-      {type === "doctor" ? (
-        <DataTable
-          type="doctor"
-          fetchDoctorPatients={fetchDoctorPatients}
-          data={filteredDoctors}
-          filter={filter}
-          setFilter={setFilter}
-          onShowForm={setShowForm}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          showAddButton={true}
-          showFilter={true}
-        />
-      ) : (
-        /* Patient Table */
-        <DataTable
-          type="patient"
-          data={patientData}
-          onShowForm={setShowForm}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          showAddButton={true}
-          showFilter={false}
-        />
-      )}
     </div>
   );
 }

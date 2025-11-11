@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 export default function PatientForm({
   onSubmit,
@@ -60,11 +61,23 @@ export default function PatientForm({
 
   // Add new history record
   const addHistory = () => {
+    const latestRecord = formData.medicalHistory[0];
+    // Check if all fields in the latest record are filled
+    if (
+      !latestRecord.diagnosis.trim() ||
+      !latestRecord.treatment.trim() ||
+      !latestRecord.date
+    ) {
+      toast.warn("Please complete the previous record before adding a new one.", {
+    position: "top-center",
+  });
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       medicalHistory: [
-        ...prev.medicalHistory,
         { diagnosis: "", treatment: "", prescription: "", date: "" },
+        ...prev.medicalHistory,
       ],
     }));
   };
@@ -72,7 +85,9 @@ export default function PatientForm({
   // Remove medical history record
   const removeHistory = (index) => {
     if (formData.medicalHistory.length > 1) {
-      const updatedHistory = formData.medicalHistory.filter((_, i) => i !== index);
+      const updatedHistory = formData.medicalHistory.filter(
+        (_, i) => i !== index
+      );
       setFormData((prev) => ({ ...prev, medicalHistory: updatedHistory }));
     }
   };
@@ -85,12 +100,14 @@ export default function PatientForm({
   return (
     <div className="max-w-6xl mx-auto mb-6 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       {/* Form Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+      <div className="bg-linear-to-r from-blue-600 to-purple-600 px-6 py-4">
         <h2 className="text-xl font-bold text-white">
           {editingPatient ? "Update Patient Record" : "Create New Patient"}
         </h2>
         <p className="text-blue-100 text-sm">
-          {editingPatient ? "Modify patient information" : "Add new patient to the system"}
+          {editingPatient
+            ? "Modify patient information"
+            : "Add new patient to the system"}
         </p>
       </div>
 
@@ -98,12 +115,22 @@ export default function PatientForm({
         {/* Basic Information Section */}
         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <svg
+              className="w-5 h-5 mr-2 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
             </svg>
             Basic Information
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {role === "admin" && (
               <div>
@@ -205,8 +232,18 @@ export default function PatientForm({
         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-              <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              <svg
+                className="w-5 h-5 mr-2 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
               </svg>
               Medical History
             </h3>
@@ -215,8 +252,18 @@ export default function PatientForm({
               onClick={addHistory}
               className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               Add Record
             </button>
@@ -224,22 +271,38 @@ export default function PatientForm({
 
           <div className="space-y-4">
             {formData.medicalHistory.map((history, index) => (
-              <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+              <div
+                key={index}
+                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-gray-700">Record #{index + 1}</h4>
+                  {/* <h4 className="font-medium text-gray-700">Record #{index + 1}</h4> */}
+                  <h4 className="font-medium text-gray-700">
+                    Record #{formData.medicalHistory.length - index}
+                  </h4>
                   {formData.medicalHistory.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeHistory(index)}
                       className="text-red-500 hover:text-red-700 transition-colors"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </button>
                   )}
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -276,7 +339,11 @@ export default function PatientForm({
                     <input
                       type="date"
                       name="date"
-                      value={history.date ? new Date(history.date).toISOString().split("T")[0] : ""}
+                      value={
+                        history.date
+                          ? new Date(history.date).toISOString().split("T")[0]
+                          : ""
+                      }
                       onChange={(e) => handleHistoryChange(index, e)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
@@ -304,8 +371,18 @@ export default function PatientForm({
         {/* Status Section */}
         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 mr-2 text-purple-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             Status
           </h3>
@@ -320,7 +397,10 @@ export default function PatientForm({
               }
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
             />
-            <label htmlFor="isActive" className="ml-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="isActive"
+              className="ml-2 text-sm font-medium text-gray-700"
+            >
               Patient is currently active and receiving treatment
             </label>
           </div>
@@ -339,8 +419,18 @@ export default function PatientForm({
             type="submit"
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             {editingPatient ? "Update Patient" : "Create Patient"}
           </button>
@@ -349,3 +439,5 @@ export default function PatientForm({
     </div>
   );
 }
+
+
